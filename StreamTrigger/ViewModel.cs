@@ -1,12 +1,10 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace StreamTrigger
 {
@@ -21,15 +19,16 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
-        private     int         pollRateSeconds = 60;
-        private     DateTime    lastCheckTime;
-        private     MainWindow  view;
-        private     string      streamName;
-        private     string      fileToExecute;
-        private     string      statusText;
-        private     bool        hasTriggered;
-
-       
+        private     int             pollRateSeconds = 60;
+        private     int             uiUpdateCount;
+        private     DateTime?       lastApiCheckTime;
+        private     DateTime?       triggeredTime;
+        private     MainWindow      view;
+        private     string          streamName;
+        private     string          fileToExecute;
+        private     string          statusText;
+        private     bool            hasTriggered;
+        private     DispatcherTimer timer;
 
         public bool HasTriggered
         {
@@ -46,6 +45,10 @@ namespace StreamTrigger
             this.view = view;
 
             LoadSettings();
+
+            StartTimer();
+
+            UpdateStatusText();
         }
 
         private void LoadSettings()
@@ -60,6 +63,41 @@ namespace StreamTrigger
         internal void OnWindowClosing()
         {
             SaveSettings();
+
+            timer.Stop();
+        }
+
+        private void StartTimer()
+        {
+            timer = new DispatcherTimer(DispatcherPriority.Background, view.Dispatcher);
+            // run the timer on a 1 second interval for ui updates, but only hit api based on poll rate seconds
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += OnTimerTick;
+            timer.Start();
+        }
+
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            Debug.WriteLine("OnTimerTick");
+            if (!HasTriggered && ++uiUpdateCount >= PollRateSeconds)
+            {
+                Debug.WriteLine("OnTimerTick: check api");
+                lastApiCheckTime = DateTime.Now;
+                if (TwitchApi.CheckStreamIsOnline(StreamName))
+                {
+                    Debug.WriteLine("OnTimerTick: api triggered");
+                    Trigger();
+                }
+            }
+            UpdateStatusText();
+        }
+
+        private void Trigger()
+        {
+            HasTriggered = true;
+            triggeredTime = DateTime.Now;
+            if (File.Exists(FileToExecute))
+                Process.Start(FileToExecute);
         }
 
         private void SaveSettings()
@@ -73,6 +111,8 @@ namespace StreamTrigger
         public void Reset()
         {
             HasTriggered = false;
+            triggeredTime = null;
+            lastApiCheckTime = null;
         }
 
         public string StreamName
@@ -111,24 +151,38 @@ namespace StreamTrigger
             get { return pollRateSeconds; }
             set
             {
-                pollRateSeconds = value;
+                pollRateSeconds = Math.Max(1, value);
+                // dont mess with the timer here, it needs to be stuck at 1 for ui updates
                 OnPropertyChanged();
             }
         }
 
         public void UpdateStatusText()
         {
-            // TODO:
+            if (HasTriggered)
+            {
+                StatusText = $"Not running, stream went online & triggered at {triggeredTime}";
+            }
+            else
+            {
+                StatusText = $"Checking stream in {PollRateSeconds - uiUpdateCount} seconds...";
+            }
         }
 
         internal void OnFindScriptFile()
         {
             OpenFileDialog findFileDlg = new OpenFileDialog();
             findFileDlg.DefaultExt = ".bat";
-            findFileDlg.Filter = "Batch (*.bat)|*.bat|Executables (*.exe)|*.exe|Powershell (*.ps1)|*.ps1";
+            findFileDlg.Filter = "Batch (*.bat)|*.bat|Executable (*.exe)|*.exe|Powershell (*.ps1)|*.ps1";
 
             findFileDlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             findFileDlg.RestoreDirectory = true;
+
+            var usePath = findFileDlg.ShowDialog() == true;
+            if (!usePath)
+                return;
+
+            FileToExecute = findFileDlg.FileName;
         }
 
     }

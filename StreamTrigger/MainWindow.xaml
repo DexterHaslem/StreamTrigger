@@ -6,28 +6,44 @@
         xmlns:local="clr-namespace:StreamTrigger"
         mc:Ignorable="d"
         Title="StreamTrigger" Height="350" Width="525"
-        Closing="OnWindowClosing">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+        Closing="OnWindowClosing"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        MinWidth="400" MaxWidth="500">
+    <Border Margin="2" Padding="1">
+        <Grid Margin="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-        <Label Grid.Row="0" Grid.Column="0">Stream name:</Label>
-        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding StreamName, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" />
+            <Grid Grid.Row="0" Grid.ColumnSpan="3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100" SharedSizeGroup="Fart" />
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+            
+                <Label Grid.Row="0" Grid.Column="0">Stream name:</Label>
+                <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="1" Text="{Binding StreamName, UpdateSourceTrigger=PropertyChanged}" />
 
+                <Label Grid.Row="0" Grid.Column="2">Poll Seconds</Label>
+                <TextBox Grid.Row="0" Grid.Column="31" Grid.ColumnSpan="2" Width="45" Text="{Binding PollRateSeconds}" />
+            </Grid>
 
-        <Label Grid.Row="1" Grid.Column="0">File To Execute:</Label>
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileToExecute, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" />
-        <Button Click="OnClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
+            <Label Grid.Row="1" Grid.Column="0">File To Execute:</Label>
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileToExecute, UpdateSourceTrigger=PropertyChanged}" />
+            <Button Click="OnClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
 
-        <Label Grid.Row="2" Grid.ColumnSpan="3" Content="{Binding StatusText}" />
-    </Grid>
+            <Label Grid.Row="2" Grid.ColumnSpan="3" Content="{Binding StatusText}" MinWidth="100"/>
+        </Grid>
+    </Border>
 </Window>
