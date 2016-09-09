@@ -5,7 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StreamTrigger"
         mc:Ignorable="d"
-        Title="StreamTrigger" Height="350" Width="525">
+        Title="StreamTrigger" Height="350" Width="525"
+        Closing="OnWindowClosing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -20,13 +21,13 @@
         </Grid.ColumnDefinitions>
 
         <Label Grid.Row="0" Grid.Column="0">Stream name:</Label>
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StreamName}" HorizontalAlignment="Stretch" />
+        <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding StreamName, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" />
 
 
         <Label Grid.Row="1" Grid.Column="0">File To Execute:</Label>
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileToExecute}" HorizontalAlignment="Stretch"/>
-        <Button Click="OnClick">...</Button>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileToExecute, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" />
+        <Button Click="OnClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
 
-        <Label Grid.Row="2" Grid.ColumnSpan="2" Content="{Binding StatusText}" />
+        <Label Grid.Row="2" Grid.ColumnSpan="3" Content="{Binding StatusText}" />
     </Grid>
 </Window>

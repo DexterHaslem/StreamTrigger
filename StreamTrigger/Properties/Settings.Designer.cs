@@ -46,5 +46,17 @@ namespace StreamTrigger.Properties {
                 this["PollRateSeconds"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("sitzkrieg")]
+        public string StreamName {
+            get {
+                return ((string)(this["StreamName"]));
+            }
+            set {
+                this["StreamName"] = value;
+            }
+        }
     }
 }

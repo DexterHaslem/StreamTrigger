@@ -31,5 +31,10 @@ namespace StreamTrigger
         {
             vm.OnFindScriptFile();
         }
+
+        private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            vm.OnWindowClosing();
+        }
     }
 }

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -20,16 +21,25 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
-        private const   int         pollRateSeconds = 60;
-        private         DateTime    lastCheckTime;
-        private         MainWindow  view;
-        private         string      streamName;
+        private     int         pollRateSeconds = 60;
+        private     DateTime    lastCheckTime;
+        private     MainWindow  view;
+        private     string      streamName;
+        private     string      fileToExecute;
+        private     string      statusText;
+        private     bool        hasTriggered;
 
-        
-        private         string      fileToExecute;
-        private         string      statusText;
+       
 
-        public bool HasTriggered { get; private set; }
+        public bool HasTriggered
+        {
+            get { return hasTriggered; }
+            set
+            {
+                hasTriggered = value;
+                OnPropertyChanged();
+            }
+        }
 
         public ViewModel(MainWindow view)
         {
@@ -40,7 +50,24 @@ namespace StreamTrigger
 
         private void LoadSettings()
         {
-            
+            PollRateSeconds = Properties.Settings.Default.PollRateSeconds;
+            FileToExecute = Properties.Settings.Default.ScriptFilePath;
+            StreamName = Properties.Settings.Default.StreamName;
+            //if (string.IsNullOrWhiteSpace(FileToExecute) || !File.Exists(FileToExecute))
+            //    FileToExecute = "";
+        }
+
+        internal void OnWindowClosing()
+        {
+            SaveSettings();
+        }
+
+        private void SaveSettings()
+        {
+            Properties.Settings.Default.PollRateSeconds = PollRateSeconds;
+            Properties.Settings.Default.ScriptFilePath = FileToExecute;
+            Properties.Settings.Default.StreamName = StreamName;
+            Properties.Settings.Default.Save();
         }
 
         public void Reset()
@@ -75,6 +102,16 @@ namespace StreamTrigger
             private set
             {
                 statusText = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int PollRateSeconds
+        {
+            get { return pollRateSeconds; }
+            set
+            {
+                pollRateSeconds = value;
                 OnPropertyChanged();
             }
         }
