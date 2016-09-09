@@ -20,9 +20,16 @@ namespace StreamTrigger
     /// </summary>
     public partial class MainWindow : Window
     {
+        private ViewModel vm;
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = vm = new ViewModel(this);
+        }
+
+        private void OnClick(object sender, RoutedEventArgs e)
+        {
+            vm.OnFindScriptFile();
         }
     }
 }

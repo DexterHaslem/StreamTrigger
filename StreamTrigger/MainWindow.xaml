@@ -5,8 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StreamTrigger"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
+        Title="StreamTrigger" Height="350" Width="525">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <Label Grid.Row="0" Grid.Column="0">Stream name:</Label>
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StreamName}" HorizontalAlignment="Stretch" />
+
+
+        <Label Grid.Row="1" Grid.Column="0">File To Execute:</Label>
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileToExecute}" HorizontalAlignment="Stretch"/>
+        <Button Click="OnClick">...</Button>
+
+        <Label Grid.Row="2" Grid.ColumnSpan="2" Content="{Binding StatusText}" />
     </Grid>
 </Window>
