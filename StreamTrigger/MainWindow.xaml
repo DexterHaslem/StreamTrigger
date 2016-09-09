@@ -10,6 +10,9 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight"
         MinWidth="400" MaxWidth="500">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="boolToVis" />
+    </Window.Resources>
     <Border Margin="2" Padding="1">
         <Grid Margin="1">
             <Grid.RowDefinitions>
@@ -43,7 +46,10 @@
             <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FileToExecute, UpdateSourceTrigger=PropertyChanged}" />
             <Button Click="OnClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
 
-            <Label Grid.Row="2" Grid.ColumnSpan="3" Content="{Binding StatusText}" MinWidth="100"/>
+            <Label Grid.Row="2" Grid.ColumnSpan="2" Content="{Binding StatusText}" MinWidth="100"/>
+            <Button Grid.Row="2" Grid.Column="3" Click="OnReset" Visibility="{Binding HasTriggered, Converter={StaticResource boolToVis}}">
+                Reset
+            </Button>
         </Grid>
     </Border>
 </Window>

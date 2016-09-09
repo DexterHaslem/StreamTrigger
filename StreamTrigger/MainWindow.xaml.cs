@@ -36,5 +36,10 @@ namespace StreamTrigger
         {
             vm.OnWindowClosing();
         }
+
+        private void OnReset(object sender, RoutedEventArgs e)
+        {
+            vm.OnReset();
+        }
     }
 }

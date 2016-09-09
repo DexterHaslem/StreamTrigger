@@ -28,6 +28,7 @@ namespace StreamTrigger
         private     string          fileToExecute;
         private     string          statusText;
         private     bool            hasTriggered;
+
         private     DispatcherTimer timer;
 
         public bool HasTriggered
@@ -88,6 +89,7 @@ namespace StreamTrigger
                     Debug.WriteLine("OnTimerTick: api triggered");
                     Trigger();
                 }
+                uiUpdateCount = 0;
             }
             UpdateStatusText();
         }
@@ -185,5 +187,9 @@ namespace StreamTrigger
             FileToExecute = findFileDlg.FileName;
         }
 
+        internal void OnReset()
+        {
+            Reset();
+        }
     }
 }
