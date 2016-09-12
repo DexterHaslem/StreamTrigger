@@ -1,5 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -19,20 +20,23 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
-        private     int             pollRateSeconds = 60;
-        private     int             uiUpdateCount;
-        private     DateTime?       lastApiCheckTime;
-        //private     DateTime?       triggeredTime;
-        private     MainWindow      view;
-        private     string          streamName;
-        private     string          wentOnlineFileToExecute;
-        private     string          wentOfflineFileToExecute;
-        private     string          statusText;
-        //private     bool            hasTriggered;
-        private     bool            streamIsOnline;
-        private     int             updatePercent; // 0 to 100 for progress bar
-
+        private     DateTime?                       lastApiCheckTime;
+        //private     DateTime?                     triggeredTime;
+        private     MainWindow                      view;
+        private     string                          streamName;
+        private     string                          wentOnlineFileToExecute;
+        private     string                          wentOfflineFileToExecute;
+        private     string                          statusText;
+        //private     bool                          hasTriggered;
+        private     bool                            streamIsOnline;
+        private     int                             pollRateSeconds = 60;
+        private     int                             uiUpdateCount;
+        private     int                             updatePercent; // 0 to 100 for progress bar
+        private     ObservableCollection<string>    logItems = new ObservableCollection<string>();
         private     DispatcherTimer timer;
+
+
+        public ObservableCollection<string> LogItems => logItems;
 
         public int UpdatePercent
         {
@@ -114,6 +118,7 @@ namespace StreamTrigger
             StreamName = Properties.Settings.Default.StreamName;
             view.Width = Properties.Settings.Default.WindowWidth;
             view.Height = Properties.Settings.Default.WindowHeight;
+            Log("Settings loaded");
         }
 
         private void SaveSettings()
@@ -159,26 +164,35 @@ namespace StreamTrigger
         private void TriggerTransistion(bool newStatus)
         {
             bool oldStatus = streamIsOnline;
-
+            Log("Stream went " + (newStatus ? "ONLINE" : "OFFLINE"));
             // this method should only be called when things effectively change
             if (!oldStatus)
             {
                 // stream just went ONLINE
                 if (File.Exists(WentOnlineFileToExecute))
+                {
                     Process.Start(WentOnlineFileToExecute);
+                    Log("Started " + WentOnlineFileToExecute);
+                }
             }
             else
             {
                 // stream just went OFFLINE
-                 if (File.Exists(WentOfflineFileToExecute))
+                if (File.Exists(WentOfflineFileToExecute))
+                {
                     Process.Start(WentOfflineFileToExecute);
+                    Log("Started " + WentOfflineFileToExecute);
+                }
             }
 
             // we're called before UI update, so set this and UI will be right
             streamIsOnline = newStatus;
         }
 
-      
+        private void Log(string item)
+        {
+            LogItems.Add($"{DateTime.Now}: {item}");
+        }
 
         public void UpdateStatus()
         {
