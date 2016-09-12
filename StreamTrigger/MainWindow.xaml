@@ -87,7 +87,7 @@
             </TabItem>
 
             <TabItem Header="Log">
-
+                <ListBox ItemsSource="{Binding LogItems}"></ListBox>
             </TabItem>
         </TabControl>
     </DockPanel>

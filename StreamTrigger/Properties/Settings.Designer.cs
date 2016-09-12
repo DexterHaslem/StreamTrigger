@@ -26,12 +26,12 @@ namespace StreamTrigger.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ScriptFilePath {
+        public string WentOnlineFile {
             get {
-                return ((string)(this["ScriptFilePath"]));
+                return ((string)(this["WentOnlineFile"]));
             }
             set {
-                this["ScriptFilePath"] = value;
+                this["WentOnlineFile"] = value;
             }
         }
         
@@ -56,6 +56,42 @@ namespace StreamTrigger.Properties {
             }
             set {
                 this["StreamName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string WentOfflineFile {
+            get {
+                return ((string)(this["WentOfflineFile"]));
+            }
+            set {
+                this["WentOfflineFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500")]
+        public double WindowWidth {
+            get {
+                return ((double)(this["WindowWidth"]));
+            }
+            set {
+                this["WindowWidth"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("350")]
+        public double WindowHeight {
+            get {
+                return ((double)(this["WindowHeight"]));
+            }
+            set {
+                this["WindowHeight"] = value;
             }
         }
     }

@@ -109,10 +109,22 @@ namespace StreamTrigger
         private void LoadSettings()
         {
             PollRateSeconds = Properties.Settings.Default.PollRateSeconds;
-            WentOnlineFileToExecute = Properties.Settings.Default.ScriptFilePath;
+            WentOnlineFileToExecute = Properties.Settings.Default.WentOnlineFile;
+            WentOfflineFileToExecute = Properties.Settings.Default.WentOfflineFile;
             StreamName = Properties.Settings.Default.StreamName;
-            //if (string.IsNullOrWhiteSpace(FileToExecute) || !File.Exists(FileToExecute))
-            //    FileToExecute = "";
+            view.Width = Properties.Settings.Default.WindowWidth;
+            view.Height = Properties.Settings.Default.WindowHeight;
+        }
+
+        private void SaveSettings()
+        {
+            Properties.Settings.Default.PollRateSeconds = PollRateSeconds;
+            Properties.Settings.Default.WentOnlineFile = WentOnlineFileToExecute;
+            Properties.Settings.Default.WentOfflineFile = WentOfflineFileToExecute;
+            Properties.Settings.Default.StreamName = StreamName;
+            Properties.Settings.Default.WindowWidth = view.Width;
+            Properties.Settings.Default.WindowHeight = view.Height;
+            Properties.Settings.Default.Save();
         }
 
         internal void OnWindowClosing()
@@ -152,23 +164,21 @@ namespace StreamTrigger
             if (!oldStatus)
             {
                 // stream just went ONLINE
+                if (File.Exists(WentOnlineFileToExecute))
+                    Process.Start(WentOnlineFileToExecute);
             }
             else
             {
                 // stream just went OFFLINE
+                 if (File.Exists(WentOfflineFileToExecute))
+                    Process.Start(WentOfflineFileToExecute);
             }
 
             // we're called before UI update, so set this and UI will be right
             streamIsOnline = newStatus;
         }
 
-        private void SaveSettings()
-        {
-            Properties.Settings.Default.PollRateSeconds = PollRateSeconds;
-            Properties.Settings.Default.ScriptFilePath = WentOnlineFileToExecute;
-            Properties.Settings.Default.StreamName = StreamName;
-            Properties.Settings.Default.Save();
-        }
+      
 
         public void UpdateStatus()
         {
