@@ -107,7 +107,13 @@ namespace StreamTrigger
 
             StartTimer();
 
-            UpdateStatus();
+            view.Loaded += (o,e) =>
+            {
+                // force an initial update so we know stream status right away
+                uiUpdateCount = PollRateSeconds;
+                OnTimerTick(this, null);
+            };
+            
         }
 
         private void LoadSettings()
