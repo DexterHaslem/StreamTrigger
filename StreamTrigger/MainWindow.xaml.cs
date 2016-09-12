@@ -14,14 +14,19 @@ namespace StreamTrigger
             DataContext = vm = new ViewModel(this);
         }
 
-        private void OnClick(object sender, RoutedEventArgs e)
-        {
-            vm.OnFindScriptFile();
-        }
-
         private void OnWindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             vm.OnWindowClosing();
+        }
+
+        private void OnFindOfflineFileClick(object sender, RoutedEventArgs e)
+        {
+            vm.OnFindExecutableFile(true);
+        }
+
+        private void OnFindOnlineFileClick(object sender, RoutedEventArgs e)
+        {
+            vm.OnFindExecutableFile(false);
         }
     }
 }

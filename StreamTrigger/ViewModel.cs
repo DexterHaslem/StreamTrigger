@@ -218,7 +218,7 @@ namespace StreamTrigger
             UpdatePercent = (int)(((float)uiUpdateCount / PollRateSeconds) * 100);
         }
 
-        internal void OnFindScriptFile()
+        internal void OnFindExecutableFile(bool isWentOfflineFile)
         {
             OpenFileDialog findFileDlg = new OpenFileDialog();
             findFileDlg.DefaultExt = ".bat";
@@ -231,7 +231,10 @@ namespace StreamTrigger
             if (!usePath)
                 return;
 
-            WentOnlineFileToExecute = findFileDlg.FileName;
+            if (isWentOfflineFile)
+                WentOfflineFileToExecute = findFileDlg.FileName;
+            else 
+                WentOnlineFileToExecute = findFileDlg.FileName;
         }
     }
 }

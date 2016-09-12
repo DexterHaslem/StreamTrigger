@@ -55,7 +55,7 @@
                         </Grid.RowDefinitions>
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="225" />
+                            <ColumnDefinition Width="150" />
                             <ColumnDefinition />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
@@ -75,13 +75,13 @@
                             <TextBox Grid.Row="0" Grid.Column="31" Grid.ColumnSpan="2" Width="45" Text="{Binding PollRateSeconds}" />
                         </Grid>
 
-                        <Label Grid.Row="1" Grid.Column="0">File To Execute when stream goes online:</Label>
+                        <Label Grid.Row="1" Grid.Column="0">Stream went online</Label>
                         <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding WentOnlineFileToExecute, UpdateSourceTrigger=PropertyChanged}" />
-                        <Button Click="OnClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
+                        <Button Click="OnFindOnlineFileClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
 
-                        <Label Grid.Row="2" Grid.Column="0">File To Execute when stream goes offline:</Label>
+                        <Label Grid.Row="2" Grid.Column="0">Stream went offline</Label>
                         <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding WentOfflineFileToExecute, UpdateSourceTrigger=PropertyChanged}" />
-                        <Button Click="OnClick" Grid.Row="2" Grid.Column="2" MinWidth="50">...</Button>
+                        <Button Click="OnFindOfflineFileClick" Grid.Row="2" Grid.Column="2" MinWidth="50">...</Button>
                     </Grid>
                 </Border>
             </TabItem>
