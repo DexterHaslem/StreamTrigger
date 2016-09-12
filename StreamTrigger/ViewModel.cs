@@ -22,99 +22,26 @@ namespace StreamTrigger
         private     int             pollRateSeconds = 60;
         private     int             uiUpdateCount;
         private     DateTime?       lastApiCheckTime;
-        private     DateTime?       triggeredTime;
+        //private     DateTime?       triggeredTime;
         private     MainWindow      view;
         private     string          streamName;
-        private     string          fileToExecute;
+        private     string          wentOnlineFileToExecute;
+        private     string          wentOfflineFileToExecute;
         private     string          statusText;
-        private     bool            hasTriggered;
+        //private     bool            hasTriggered;
+        private     bool            streamIsOnline;
+        private     int             updatePercent; // 0 to 100 for progress bar
 
         private     DispatcherTimer timer;
 
-        public bool HasTriggered
+        public int UpdatePercent
         {
-            get { return hasTriggered; }
+            get { return updatePercent; }
             set
             {
-                hasTriggered = value;
+                updatePercent = value;
                 OnPropertyChanged();
             }
-        }
-
-        public ViewModel(MainWindow view)
-        {
-            this.view = view;
-
-            LoadSettings();
-
-            StartTimer();
-
-            UpdateStatusText();
-        }
-
-        private void LoadSettings()
-        {
-            PollRateSeconds = Properties.Settings.Default.PollRateSeconds;
-            FileToExecute = Properties.Settings.Default.ScriptFilePath;
-            StreamName = Properties.Settings.Default.StreamName;
-            //if (string.IsNullOrWhiteSpace(FileToExecute) || !File.Exists(FileToExecute))
-            //    FileToExecute = "";
-        }
-
-        internal void OnWindowClosing()
-        {
-            SaveSettings();
-
-            timer.Stop();
-        }
-
-        private void StartTimer()
-        {
-            timer = new DispatcherTimer(DispatcherPriority.Background, view.Dispatcher);
-            // run the timer on a 1 second interval for ui updates, but only hit api based on poll rate seconds
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += OnTimerTick;
-            timer.Start();
-        }
-
-        private void OnTimerTick(object sender, EventArgs e)
-        {
-            Debug.WriteLine("OnTimerTick");
-            if (!HasTriggered && ++uiUpdateCount >= PollRateSeconds)
-            {
-                Debug.WriteLine("OnTimerTick: check api");
-                lastApiCheckTime = DateTime.Now;
-                if (TwitchApi.CheckStreamIsOnline(StreamName))
-                {
-                    Debug.WriteLine("OnTimerTick: api triggered");
-                    Trigger();
-                }
-                uiUpdateCount = 0;
-            }
-            UpdateStatusText();
-        }
-
-        private void Trigger()
-        {
-            HasTriggered = true;
-            triggeredTime = DateTime.Now;
-            if (File.Exists(FileToExecute))
-                Process.Start(FileToExecute);
-        }
-
-        private void SaveSettings()
-        {
-            Properties.Settings.Default.PollRateSeconds = PollRateSeconds;
-            Properties.Settings.Default.ScriptFilePath = FileToExecute;
-            Properties.Settings.Default.StreamName = StreamName;
-            Properties.Settings.Default.Save();
-        }
-
-        public void Reset()
-        {
-            HasTriggered = false;
-            triggeredTime = null;
-            lastApiCheckTime = null;
         }
 
         public string StreamName
@@ -123,17 +50,26 @@ namespace StreamTrigger
             set
             {
                 streamName = value;
-                Reset();
                 OnPropertyChanged();
             }
         }
 
-        public string FileToExecute
+        public string WentOnlineFileToExecute
         {
-            get { return fileToExecute; }
+            get { return wentOnlineFileToExecute; }
             set
             {
-                fileToExecute = value;
+                wentOnlineFileToExecute = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string WentOfflineFileToExecute
+        {
+            get { return wentOfflineFileToExecute; }
+            set
+            {
+                wentOfflineFileToExecute = value;
                 OnPropertyChanged();
             }
         }
@@ -159,16 +95,85 @@ namespace StreamTrigger
             }
         }
 
-        public void UpdateStatusText()
+        public ViewModel(MainWindow view)
         {
-            if (HasTriggered)
+            this.view = view;
+
+            LoadSettings();
+
+            StartTimer();
+
+            UpdateStatus();
+        }
+
+        private void LoadSettings()
+        {
+            PollRateSeconds = Properties.Settings.Default.PollRateSeconds;
+            WentOnlineFileToExecute = Properties.Settings.Default.ScriptFilePath;
+            StreamName = Properties.Settings.Default.StreamName;
+            //if (string.IsNullOrWhiteSpace(FileToExecute) || !File.Exists(FileToExecute))
+            //    FileToExecute = "";
+        }
+
+        internal void OnWindowClosing()
+        {
+            SaveSettings();
+
+            timer.Stop();
+        }
+
+        private void StartTimer()
+        {
+            timer = new DispatcherTimer(DispatcherPriority.Background, view.Dispatcher);
+            // run the timer on a 1 second interval for ui updates, but only hit api based on poll rate seconds
+            timer.Interval = TimeSpan.FromSeconds(1);
+            timer.Tick += OnTimerTick;
+            timer.Start();
+        }
+
+        private void OnTimerTick(object sender, EventArgs e)
+        {
+            if (++uiUpdateCount > PollRateSeconds)
             {
-                StatusText = $"Not running, stream went online & triggered at {triggeredTime}";
+                lastApiCheckTime = DateTime.Now;
+                bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName);
+                if (newStatus != streamIsOnline)
+                    TriggerTransistion(newStatus);
+                uiUpdateCount = 0;
+            }
+            UpdateStatus();
+        }
+
+        private void TriggerTransistion(bool newStatus)
+        {
+            bool oldStatus = streamIsOnline;
+
+            // this method should only be called when things effectively change
+            if (!oldStatus)
+            {
+                // stream just went ONLINE
             }
             else
             {
-                StatusText = $"Checking stream in {PollRateSeconds - uiUpdateCount} seconds...";
+                // stream just went OFFLINE
             }
+
+            // we're called before UI update, so set this and UI will be right
+            streamIsOnline = newStatus;
+        }
+
+        private void SaveSettings()
+        {
+            Properties.Settings.Default.PollRateSeconds = PollRateSeconds;
+            Properties.Settings.Default.ScriptFilePath = WentOnlineFileToExecute;
+            Properties.Settings.Default.StreamName = StreamName;
+            Properties.Settings.Default.Save();
+        }
+
+        public void UpdateStatus()
+        {
+            StatusText = "Stream is " + (streamIsOnline ? "ONLINE" : "OFFLINE");
+            UpdatePercent = (int)(((float)uiUpdateCount / PollRateSeconds) * 100);
         }
 
         internal void OnFindScriptFile()
@@ -184,12 +189,7 @@ namespace StreamTrigger
             if (!usePath)
                 return;
 
-            FileToExecute = findFileDlg.FileName;
-        }
-
-        internal void OnReset()
-        {
-            Reset();
+            WentOnlineFileToExecute = findFileDlg.FileName;
         }
     }
 }
