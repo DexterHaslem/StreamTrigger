@@ -28,7 +28,7 @@ namespace StreamTrigger
         private     string                          wentOfflineFileToExecute;
         private     string                          statusText;
         //private     bool                          hasTriggered;
-        private     bool                            streamIsOnline;
+        private     bool?                           streamIsOnline;
         private     int                             pollRateSeconds = 60;
         private     int                             uiUpdateCount;
         private     int                             updatePercent; // 0 to 100 for progress bar
@@ -154,7 +154,15 @@ namespace StreamTrigger
             {
                 lastApiCheckTime = DateTime.Now;
                 bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName);
-                if (newStatus != streamIsOnline)
+
+                // if this is our very first poll, we have to make an educated
+                // guess and assume this is a good 'starting' point. while 
+                // we could technically miss a transition in our first poll, 
+                // its unlikely, and this is the only way we can prevent 
+                // errornous flipping on - if we start the app when a stream is already live, etc
+                if (streamIsOnline == null)
+                    streamIsOnline = newStatus;
+                else if (newStatus != streamIsOnline.Value)
                     TriggerTransistion(newStatus);
                 uiUpdateCount = 0;
             }
@@ -163,7 +171,8 @@ namespace StreamTrigger
 
         private void TriggerTransistion(bool newStatus)
         {
-            bool oldStatus = streamIsOnline;
+            Debug.Assert(streamIsOnline != null);
+            bool oldStatus = streamIsOnline.Value;
             Log("Stream went " + (newStatus ? "ONLINE" : "OFFLINE"));
             // this method should only be called when things effectively change
             if (!oldStatus)
@@ -196,7 +205,10 @@ namespace StreamTrigger
 
         public void UpdateStatus()
         {
-            StatusText = "Stream is " + (streamIsOnline ? "ONLINE" : "OFFLINE");
+            if (streamIsOnline != null)
+                StatusText = "Stream is " + (streamIsOnline.Value ? "ONLINE" : "OFFLINE");
+            else
+                StatusText = "Getting stream state";
             UpdatePercent = (int)(((float)uiUpdateCount / PollRateSeconds) * 100);
         }
 
