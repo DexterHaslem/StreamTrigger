@@ -20,5 +20,8 @@
     <Setting Name="WindowHeight" Type="System.Double" Scope="User">
       <Value Profile="(Default)">350</Value>
     </Setting>
+    <Setting Name="ClientId" Type="System.String" Scope="User">
+      <Value Profile="(Default)">rqm7hvz8t4im4isn53zogkmi1pvzd5p</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

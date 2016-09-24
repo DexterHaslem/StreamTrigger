@@ -6,11 +6,14 @@ namespace StreamTrigger
     public class TwitchApi
     {
         private const string streamUrl = "https://api.twitch.tv/kraken/streams/"; // + streamname
-        public static bool CheckStreamIsOnline(string streamName)
+        public static bool CheckStreamIsOnline(string streamName, string clientId)
         {
             string streamJsonString;
-            using (var wc = new System.Net.WebClient())
+            using (var wc = new System.Net.WebClient()) {
+                //wc.Headers.Add(System.Net.HttpRequestHeader.Accept, "application/vnd.twitchtv.v2+json");
+                wc.Headers.Add($"Client-ID: {clientId}");
                 streamJsonString = wc.DownloadString(streamUrl + streamName);
+            }
             JObject streamJsonParsed = JObject.Parse(streamJsonString); 
             return streamJsonParsed["stream"].Type != JTokenType.Null && streamJsonParsed["stream"].Type != JTokenType.None;
         }

@@ -159,7 +159,7 @@ namespace StreamTrigger
             if (++uiUpdateCount > PollRateSeconds)
             {
                 lastApiCheckTime = DateTime.Now;
-                bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName);
+                bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName, Properties.Settings.Default.ClientId);
 
                 // if this is our very first poll, we have to make an educated
                 // guess and assume this is a good 'starting' point. while 
