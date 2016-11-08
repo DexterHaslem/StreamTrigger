@@ -28,5 +28,15 @@ namespace StreamTrigger
         {
             vm.OnFindExecutableFile(false);
         }
+
+        private void OnShowAbout(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(this, "May Markniisaan never mangle his body in a work accident \r\nand be slave to the bluecollar for life\r\nOR perhaps go to collage and get educated", "About");
+        }
+
+        private void OnExitClick(object sender, RoutedEventArgs e)
+        {
+            Close();
+        }
     }
 }

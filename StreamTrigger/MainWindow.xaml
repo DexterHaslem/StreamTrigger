@@ -14,11 +14,11 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="E_xit" />
+                <MenuItem Header="E_xit"  Click="OnExitClick"/>
             </MenuItem>
 
             <MenuItem Header="_Help">
-                <MenuItem Header="_About"/>
+                <MenuItem Header="_About" Click="OnShowAbout"/>
             </MenuItem>
         </Menu>
 

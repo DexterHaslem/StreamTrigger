@@ -158,19 +158,26 @@ namespace StreamTrigger
         {
             if (++uiUpdateCount > PollRateSeconds)
             {
-                lastApiCheckTime = DateTime.Now;
-                bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName, Properties.Settings.Default.ClientId);
+                try
+                {
+                    lastApiCheckTime = DateTime.Now;
+                    bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName, Properties.Settings.Default.ClientId);
 
-                // if this is our very first poll, we have to make an educated
-                // guess and assume this is a good 'starting' point. while 
-                // we could technically miss a transition in our first poll, 
-                // its unlikely, and this is the only way we can prevent 
-                // errornous flipping on - if we start the app when a stream is already live, etc
-                if (streamIsOnline == null)
-                    streamIsOnline = newStatus;
-                else if (newStatus != streamIsOnline.Value)
-                    TriggerTransistion(newStatus);
-                uiUpdateCount = 0;
+                    // if this is our very first poll, we have to make an educated
+                    // guess and assume this is a good 'starting' point. while 
+                    // we could technically miss a transition in our first poll, 
+                    // its unlikely, and this is the only way we can prevent 
+                    // errornous flipping on - if we start the app when a stream is already live, etc
+                    if (streamIsOnline == null)
+                        streamIsOnline = newStatus;
+                    else if (newStatus != streamIsOnline.Value)
+                        TriggerTransistion(newStatus);
+                    uiUpdateCount = 0;
+                }
+                catch (Exception ex)
+                {
+                    Log("Something fucked up: " + ex.Message);
+                }
             }
             UpdateStatus();
         }
@@ -224,7 +231,8 @@ namespace StreamTrigger
             findFileDlg.DefaultExt = ".bat";
             findFileDlg.Filter = "Batch (*.bat)|*.bat|Executable (*.exe)|*.exe|Powershell (*.ps1)|*.ps1";
 
-            findFileDlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+            // this nukes user initial
+            //findFileDlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             findFileDlg.RestoreDirectory = true;
 
             var usePath = findFileDlg.ShowDialog() == true;
