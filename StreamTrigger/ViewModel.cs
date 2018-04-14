@@ -20,6 +20,7 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
+        private     TwitchApi                       api;
         private     DateTime?                       lastApiCheckTime;
         //private     DateTime?                     triggeredTime;
         private     MainWindow                      view;
@@ -101,6 +102,7 @@ namespace StreamTrigger
 
         public ViewModel(MainWindow view)
         {
+            api = new TwitchApi(Properties.Settings.Default.ClientId);
             this.view = view;
 
             LoadSettings();
@@ -161,7 +163,7 @@ namespace StreamTrigger
                 try
                 {
                     lastApiCheckTime = DateTime.Now;
-                    bool newStatus = TwitchApi.CheckStreamIsOnline(StreamName, Properties.Settings.Default.ClientId);
+                    bool newStatus = api.CheckStreamIsOnline(StreamName);
 
                     // if this is our very first poll, we have to make an educated
                     // guess and assume this is a good 'starting' point. while 
@@ -176,7 +178,7 @@ namespace StreamTrigger
                 }
                 catch (Exception ex)
                 {
-                    Log("Something fucked up: " + ex.Message);
+                    Log("Exception polling twitch API: " + ex.Message);
                 }
             }
             UpdateStatus();
