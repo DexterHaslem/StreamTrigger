@@ -1,0 +1,23 @@
+{
+    "data": [
+        {
+            "id": "28327815808",
+            "user_id": "28379957",
+            "game_id": "14304",
+            "community_ids": [
+                "6e940c4a-c42f-47d2-af83-0a2c7e47c421",
+                "cd5c6356-f77d-46e7-918a-17ad16b2f967",
+                "ff1e77af-551d-4993-945c-f8ceaa2a2829"
+            ],
+            "type": "live",
+            "title": "Live - 20+ HRS - MAN VS STREAM HELL DRUID SPEEDRUN",
+            "viewer_count": 990,
+            "started_at": "2018-04-14T13:23:18Z",
+            "language": "en",
+            "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_mrllamasc-{width}x{height}.jpg"
+        }
+    ],
+    "pagination": {
+        "cursor": "eyJiIjpudWxsLCJhIjp7Ik9mZnNldCI6MX19"
+    }
+}
