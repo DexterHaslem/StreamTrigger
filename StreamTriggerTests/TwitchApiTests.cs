@@ -25,7 +25,7 @@ namespace StreamTrigger.Tests
         {
             var offlinePayload = System.IO.File.ReadAllText("offline.json");
             var offlinePayloadResult = _testApi.ParseStreamResponseOnline(offlinePayload);
-            Assert.IsFalse(offlinePayloadResult);
+            Assert.IsNull(offlinePayloadResult);
         }
 
         [TestMethod]
@@ -33,7 +33,7 @@ namespace StreamTrigger.Tests
         {
             var onlinePayload = System.IO.File.ReadAllText("online.json");
             var onlinePayloadResult = _testApi.ParseStreamResponseOnline(onlinePayload);
-            Assert.IsTrue(onlinePayloadResult);
+            Assert.IsNotNull(onlinePayloadResult);
         }
     }
 }
