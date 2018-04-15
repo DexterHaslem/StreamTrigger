@@ -20,6 +20,8 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
+        private const int MAX_POLLRATE_SECS = 15;
+
         private     TwitchApi                       api;
         private     DateTime?                       lastApiCheckTime;
         //private     DateTime?                     triggeredTime;
@@ -94,7 +96,7 @@ namespace StreamTrigger
             get { return pollRateSeconds; }
             set
             {
-                pollRateSeconds = Math.Max(1, value);
+                pollRateSeconds = Math.Max(MAX_POLLRATE_SECS, value);
                 // dont mess with the timer here, it needs to be stuck at 1 for ui updates
                 OnPropertyChanged();
             }
@@ -163,17 +165,19 @@ namespace StreamTrigger
                 try
                 {
                     lastApiCheckTime = DateTime.Now;
-                    bool newStatus = api.CheckStreamIsOnline(StreamName);
+                    var streamData = api.GetCurrentStreamInfo(StreamName);
 
                     // if this is our very first poll, we have to make an educated
                     // guess and assume this is a good 'starting' point. while 
                     // we could technically miss a transition in our first poll, 
                     // its unlikely, and this is the only way we can prevent 
                     // errornous flipping on - if we start the app when a stream is already live, etc
+                    var newStreamOnlineValue = streamData != null ? streamData.Type == "live" : false;
                     if (streamIsOnline == null)
-                        streamIsOnline = newStatus;
-                    else if (newStatus != streamIsOnline.Value)
-                        TriggerTransistion(newStatus);
+                        streamIsOnline = newStreamOnlineValue;
+                    else if (newStreamOnlineValue != streamIsOnline.Value)
+                        TriggerTransistion(newStreamOnlineValue, streamData);
+
                     uiUpdateCount = 0;
                 }
                 catch (Exception ex)
@@ -184,11 +188,20 @@ namespace StreamTrigger
             UpdateStatus();
         }
 
-        private void TriggerTransistion(bool newStatus)
+        private void TriggerTransistion(bool newStatus, StreamResponseData data)
         {
             Debug.Assert(streamIsOnline != null);
             bool oldStatus = streamIsOnline.Value;
             Log("Stream went " + (newStatus ? "ONLINE" : "OFFLINE"));
+            if (newStatus)
+            {
+                Log("Live stream info *** ");
+                Log($"\tTitle: \"{data.Title}\"");
+                Log($"\tUser: {StreamName}");
+                Log($"\tViewer Count: {data.ViewerCount}");
+                Log($"\tStarted on: {data.StartedAt.ToLocalTime()}");
+            }
+
             // this method should only be called when things effectively change
             if (!oldStatus)
             {

@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
 //using System.Runtime.Serialization.Json; turbolame
 
 namespace StreamTrigger
@@ -17,9 +19,14 @@ namespace StreamTrigger
         {
             _clientId = clientId;
         }
-        
-        
-        public bool CheckStreamIsOnline(string login)
+
+
+        /// <summary>
+        /// Asks twitch for the current stream info for a given username
+        /// </summary>
+        /// <param name="login">stream name, the user login</param>
+        /// <returns><see cref="StreamResponseData">data</see> for current stream or null if not live</returns>
+        public StreamResponseData GetCurrentStreamInfo(string login)
         {
             // thankfully, twitch added a way to use user login id directly, instead of having to lookup id first
             var getStreamInfoUrl = $"{ _apiRoot}streams?user_login={login}";
@@ -32,48 +39,39 @@ namespace StreamTrigger
             }
         }
 
-        public bool ParseStreamResponseOnline(string jsonPayload)
+        public StreamResponseData ParseStreamResponseOnline(string jsonPayload)
         {
-            /*
-             * // live
-                {
-                    "data": [
-                        {
-                            "id": "28327815808",
-                            "user_id": "28379957",
-                            "game_id": "14304",
-                            "community_ids": [
-                                "6e940c4a-c42f-47d2-af83-0a2c7e47c421",
-                                "cd5c6356-f77d-46e7-918a-17ad16b2f967",
-                                "ff1e77af-551d-4993-945c-f8ceaa2a2829"
-                            ],
-                            "type": "live",
-                            "title": "Live - 20+ HRS - MAN VS STREAM HELL DRUID SPEEDRUN",
-                            "viewer_count": 990,
-                            "started_at": "2018-04-14T13:23:18Z",
-                            "language": "en",
-                            "thumbnail_url": "https://static-cdn.jtvnw.net/previews-ttv/live_user_mrllamasc-{width}x{height}.jpg"
-                        }
-                    ],
-                    "pagination": {
-                        "cursor": "eyJiIjpudWxsLCJhIjp7Ik9mZnNldCI6MX19"
-                    }
-                }
+            StreamsResponse resp = JsonConvert.DeserializeObject<StreamsResponse>(jsonPayload);
+            if (resp.Data == null || resp.Data.Length < 1)
+                return null;
 
-
-                // not live
-
-                {
-                    "data": [],
-                    "pagination": {}
-                } */
-            JObject streamJsonParsed = JObject.Parse(jsonPayload);
-            //JArray rootArray = streamJsonParsed["data"].
-            if (streamJsonParsed["data"].Type != JTokenType.Array)
-                return false;
-
-
-            return true;
+            // since we specify a user id we should really
+            // only get one thing back. at any rate
+            // always use first response
+            return resp.Data[0];
         }
+    }
+
+    public class StreamResponseData
+    {
+        public string Id { get; set; }
+        [JsonProperty(PropertyName = "user_id")]
+        public string UserId { get; set; }
+        [JsonProperty(PropertyName = "game_id")]
+        public string GameId { get; set; }
+        [JsonProperty(PropertyName = "community_ids")]
+        public Guid[] CommunityIds { get; set; } // TODO: GUIDS?
+        public string Type { get; set; }
+        public string Title { get; set; }
+        [JsonProperty(PropertyName = "viewer_count")]
+        public int ViewerCount { get; set; }
+        [JsonProperty(PropertyName = "started_at")]
+        public DateTime StartedAt { get; set; }
+    }
+
+    public class StreamsResponse
+    {
+        public StreamResponseData[] Data { get; set; }
+        // dont care about pagination
     }
 }
