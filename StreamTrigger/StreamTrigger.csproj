@@ -61,6 +61,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="NotifyPropertyChangedBase.cs" />
+    <Compile Include="Trigger.cs" />
+    <Compile Include="TriggerAction.cs" />
+    <Compile Include="TriggerSource.cs" />
     <Compile Include="TwitchApi.cs" />
     <Compile Include="ViewModel.cs" />
     <Page Include="MainWindow.xaml">

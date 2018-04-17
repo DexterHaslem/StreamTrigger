@@ -3,7 +3,7 @@ using StreamTrigger;
 
 namespace StreamTriggerTests
 {
-    [TestClass()]
+    [TestClass]
     public class TwitchApiTests
     {
         private TwitchApi _testApi;
