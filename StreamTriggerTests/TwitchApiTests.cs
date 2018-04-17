@@ -1,23 +1,18 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StreamTrigger;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace StreamTrigger.Tests
+namespace StreamTriggerTests
 {
     [TestClass()]
     public class TwitchApiTests
     {
         private TwitchApi _testApi;
-        private readonly string _testClientId = "rqm7hvz8t4im4isn53zogkmi1pvzd5p";
+        private const string TestClientId = "rqm7hvz8t4im4isn53zogkmi1pvzd5p";
 
         [TestInitialize]
         public void TestInit()
         {
-            _testApi = new TwitchApi(_testClientId);
+            _testApi = new TwitchApi(TestClientId);
         }
 
         [TestMethod]

@@ -12,7 +12,8 @@ namespace StreamTrigger
     public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = "")
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -20,83 +21,90 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
-        private const int MAX_POLLRATE_SECS = 15;
+        private const int MinPollRateSecs = 15;
+        private const int UiUpdateIntervalSecs = 1;
 
-        private     TwitchApi                       api;
-        private     DateTime?                       lastApiCheckTime;
-        //private     DateTime?                     triggeredTime;
-        private     MainWindow                      view;
-        private     string                          streamName;
-        private     string                          wentOnlineFileToExecute;
-        private     string                          wentOfflineFileToExecute;
-        private     string                          statusText;
-        //private     bool                          hasTriggered;
-        private     bool?                           streamIsOnline;
-        private     int                             pollRateSeconds = 60;
-        private     int                             uiUpdateCount;
-        private     int                             updatePercent; // 0 to 100 for progress bar
-        private     ObservableCollection<string>    logItems = new ObservableCollection<string>();
-        private     DispatcherTimer timer;
+        private readonly TwitchApi _api;       
+        private string _streamName;        
+        private string _statusText;
+        private bool? _streamIsOnline;
+        private DispatcherTimer _timer;    
+        private int _pollRateSeconds = 60;
+        private int _uiUpdateCount;
+        private int _updatePercent; // 0 to 100 for progress bar
+        private string _updateTooltip;
+        private readonly MainWindow _view;
+        private string _wentOnlineFileToExecute;
+        private string _wentOfflineFileToExecute;
 
-
-        public ObservableCollection<string> LogItems => logItems;
+        public ObservableCollection<string> LogItems { get; } = new ObservableCollection<string>();
 
         public int UpdatePercent
         {
-            get { return updatePercent; }
+            get => _updatePercent;
             set
             {
-                updatePercent = value;
+                _updatePercent = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string UpdateTooltip
+        {
+            get => _updateTooltip;
+            set
+            {
+                _updateTooltip = value;
                 OnPropertyChanged();
             }
         }
 
         public string StreamName
         {
-            get { return streamName; }
+            get => _streamName;
             set
             {
-                streamName = value;
+                _streamName = value;
                 OnPropertyChanged();
             }
         }
 
         public string WentOnlineFileToExecute
         {
-            get { return wentOnlineFileToExecute; }
+            get => _wentOnlineFileToExecute;
             set
             {
-                wentOnlineFileToExecute = value;
+                _wentOnlineFileToExecute = value;
                 OnPropertyChanged();
             }
         }
 
         public string WentOfflineFileToExecute
         {
-            get { return wentOfflineFileToExecute; }
+            get => _wentOfflineFileToExecute;
             set
             {
-                wentOfflineFileToExecute = value;
+                _wentOfflineFileToExecute = value;
                 OnPropertyChanged();
             }
         }
 
         public string StatusText
         {
-            get { return statusText; }
+            get => _statusText;
             private set
             {
-                statusText = value;
+                _statusText = value;
                 OnPropertyChanged();
             }
         }
 
         public int PollRateSeconds
         {
-            get { return pollRateSeconds; }
+            get => _pollRateSeconds;
             set
             {
-                pollRateSeconds = Math.Max(MAX_POLLRATE_SECS, value);
+                _pollRateSeconds = Math.Max(MinPollRateSecs, value);
                 // dont mess with the timer here, it needs to be stuck at 1 for ui updates
                 OnPropertyChanged();
             }
@@ -104,20 +112,19 @@ namespace StreamTrigger
 
         public ViewModel(MainWindow view)
         {
-            api = new TwitchApi(Properties.Settings.Default.ClientId);
-            this.view = view;
+            _api = new TwitchApi(Properties.Settings.Default.ClientId);
+            _view = view;
 
             LoadSettings();
 
             StartTimer();
 
-            view.Loaded += (o,e) =>
+            view.Loaded += (o, e) =>
             {
                 // force an initial update so we know stream status right away
-                uiUpdateCount = PollRateSeconds;
+                _uiUpdateCount = PollRateSeconds;
                 OnTimerTick(this, null);
             };
-            
         }
 
         private void LoadSettings()
@@ -126,8 +133,8 @@ namespace StreamTrigger
             WentOnlineFileToExecute = Properties.Settings.Default.WentOnlineFile;
             WentOfflineFileToExecute = Properties.Settings.Default.WentOfflineFile;
             StreamName = Properties.Settings.Default.StreamName;
-            view.Width = Properties.Settings.Default.WindowWidth;
-            view.Height = Properties.Settings.Default.WindowHeight;
+            _view.Width = Properties.Settings.Default.WindowWidth;
+            _view.Height = Properties.Settings.Default.WindowHeight;
             Log("Settings loaded");
         }
 
@@ -137,8 +144,8 @@ namespace StreamTrigger
             Properties.Settings.Default.WentOnlineFile = WentOnlineFileToExecute;
             Properties.Settings.Default.WentOfflineFile = WentOfflineFileToExecute;
             Properties.Settings.Default.StreamName = StreamName;
-            Properties.Settings.Default.WindowWidth = view.Width;
-            Properties.Settings.Default.WindowHeight = view.Height;
+            Properties.Settings.Default.WindowWidth = _view.Width;
+            Properties.Settings.Default.WindowHeight = _view.Height;
             Properties.Settings.Default.Save();
         }
 
@@ -146,60 +153,61 @@ namespace StreamTrigger
         {
             SaveSettings();
 
-            timer.Stop();
+            _timer.Stop();
         }
 
         private void StartTimer()
         {
-            timer = new DispatcherTimer(DispatcherPriority.Background, view.Dispatcher);
-            // run the timer on a 1 second interval for ui updates, but only hit api based on poll rate seconds
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += OnTimerTick;
-            timer.Start();
+            // run the timer on a UIUpdateIntervalSecs second interval for ui updates,
+            // but only hit api based on poll rate seconds
+            _timer = new DispatcherTimer(DispatcherPriority.Background, _view.Dispatcher)
+            {
+                Interval = TimeSpan.FromSeconds(UiUpdateIntervalSecs)
+            };
+            _timer.Tick += OnTimerTick;
+            _timer.Start();
         }
 
         private void OnTimerTick(object sender, EventArgs e)
         {
-            if (++uiUpdateCount > PollRateSeconds)
+            if (++_uiUpdateCount > PollRateSeconds)
             {
                 try
                 {
-                    lastApiCheckTime = DateTime.Now;
-                    var streamData = api.GetCurrentStreamInfo(StreamName);
+                    var streamData = _api.GetCurrentStreamInfo(StreamName);
 
                     // if this is our very first poll, we have to make an educated
                     // guess and assume this is a good 'starting' point. while 
                     // we could technically miss a transition in our first poll, 
                     // its unlikely, and this is the only way we can prevent 
                     // errornous flipping on - if we start the app when a stream is already live, etc
-                    var newStreamOnlineValue = streamData != null ? streamData.Type == "live" : false;
-                    if (streamIsOnline == null)
-                        streamIsOnline = newStreamOnlineValue;
-                    else if (newStreamOnlineValue != streamIsOnline.Value)
+                    var newStreamOnlineValue = streamData != null && streamData.Type == "live";
+
+                    if (_streamIsOnline == null)
+                        _streamIsOnline = newStreamOnlineValue;
+                    else if (newStreamOnlineValue != _streamIsOnline.Value)
                         TriggerTransistion(newStreamOnlineValue, streamData);
 
-                    uiUpdateCount = 0;
+                    _uiUpdateCount = 0;
                 }
                 catch (Exception ex)
                 {
                     Log("Exception polling twitch API: " + ex.Message);
                 }
             }
+
             UpdateStatus();
         }
 
         private void TriggerTransistion(bool newStatus, StreamResponseData data)
         {
-            Debug.Assert(streamIsOnline != null);
-            bool oldStatus = streamIsOnline.Value;
+            Debug.Assert(_streamIsOnline != null);
+            var oldStatus = _streamIsOnline.Value;
             Log("Stream went " + (newStatus ? "ONLINE" : "OFFLINE"));
+
             if (newStatus)
             {
-                Log("Live stream info *** ");
-                Log($"\tTitle: \"{data.Title}\"");
-                Log($"\tUser: {StreamName}");
-                Log($"\tViewer Count: {data.ViewerCount}");
-                Log($"\tStarted on: {data.StartedAt.ToLocalTime()}");
+                LogLiveStreamInfo(data);
             }
 
             // this method should only be called when things effectively change
@@ -223,7 +231,16 @@ namespace StreamTrigger
             }
 
             // we're called before UI update, so set this and UI will be right
-            streamIsOnline = newStatus;
+            _streamIsOnline = newStatus;
+        }
+
+        private void LogLiveStreamInfo(StreamResponseData data)
+        {
+            Log("Live stream info *** ");
+            Log($"\tTitle: \"{data.Title}\"");
+            Log($"\tUser: {StreamName}");
+            Log($"\tViewer Count: {data.ViewerCount}");
+            Log($"\tStarted on: {data.StartedAt.ToLocalTime()}");
         }
 
         private void Log(string item)
@@ -233,22 +250,26 @@ namespace StreamTrigger
 
         public void UpdateStatus()
         {
-            if (streamIsOnline != null)
-                StatusText = "Stream is " + (streamIsOnline.Value ? "ONLINE" : "OFFLINE");
+            if (_streamIsOnline != null)
+                StatusText = "Stream is " + (_streamIsOnline.Value ? "ONLINE" : "OFFLINE");
             else
                 StatusText = "Getting stream state";
-            UpdatePercent = (int)(((float)uiUpdateCount / PollRateSeconds) * 100);
+
+            var floatPct = Math.Round((float) _uiUpdateCount / PollRateSeconds * 100);
+            UpdateTooltip = $"{floatPct:##.00}%";
+            UpdatePercent = (int)floatPct;
         }
 
         internal void OnFindExecutableFile(bool isWentOfflineFile)
         {
-            OpenFileDialog findFileDlg = new OpenFileDialog();
-            findFileDlg.DefaultExt = ".bat";
-            findFileDlg.Filter = "Batch (*.bat)|*.bat|Executable (*.exe)|*.exe|Powershell (*.ps1)|*.ps1";
+            var findFileDlg = new OpenFileDialog
+            {
+                DefaultExt = ".bat",
+                Filter = "Batch (*.bat)|*.bat|Executable (*.exe)|*.exe|Powershell (*.ps1)|*.ps1",
+                RestoreDirectory = true
+            };
 
-            // this nukes user initial
-            //findFileDlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-            findFileDlg.RestoreDirectory = true;
+            // don't set find dialog's initial directory in code, this will nuke user's last used on a fresh start
 
             var usePath = findFileDlg.ShowDialog() == true;
             if (!usePath)
@@ -256,7 +277,7 @@ namespace StreamTrigger
 
             if (isWentOfflineFile)
                 WentOfflineFileToExecute = findFileDlg.FileName;
-            else 
+            else
                 WentOnlineFileToExecute = findFileDlg.FileName;
         }
     }
