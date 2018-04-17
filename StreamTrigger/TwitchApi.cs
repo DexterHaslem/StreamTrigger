@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-//using System.Runtime.Serialization.Json; turbolame
 
 namespace StreamTrigger
 {
@@ -12,14 +10,14 @@ namespace StreamTrigger
     {
         // beware: Twitch has changed the behavior of responses on 'stable' api versions in the past. woohoo!
         // ##LASTUPDATED 04142018 
-        private readonly string _apiRoot = "https://api.twitch.tv/helix/";
+        private const string ApiRoot = "https://api.twitch.tv/helix/";
+
         private readonly string _clientId;
 
         public TwitchApi(string clientId)
         {
             _clientId = clientId;
         }
-
 
         /// <summary>
         /// Asks twitch for the current stream info for a given username
@@ -29,9 +27,10 @@ namespace StreamTrigger
         public StreamResponseData GetCurrentStreamInfo(string login)
         {
             // thankfully, twitch added a way to use user login id directly, instead of having to lookup id first
-            var getStreamInfoUrl = $"{ _apiRoot}streams?user_login={login}";
+            var getStreamInfoUrl = $"{ApiRoot}streams?user_login={login}";
 
-            using (var wc = new System.Net.WebClient()) {
+            using (var wc = new System.Net.WebClient())
+            {
                 wc.Headers.Add($"Client-ID: {_clientId}");
                 var streamJsonString = wc.DownloadString(getStreamInfoUrl);
                 // parse this sync, its a small response so doesnt take much time
@@ -41,7 +40,7 @@ namespace StreamTrigger
 
         public StreamResponseData ParseStreamResponseOnline(string jsonPayload)
         {
-            StreamsResponse resp = JsonConvert.DeserializeObject<StreamsResponse>(jsonPayload);
+            var resp = JsonConvert.DeserializeObject<StreamsResponse>(jsonPayload);
             if (resp.Data == null || resp.Data.Length < 1)
                 return null;
 
@@ -54,17 +53,21 @@ namespace StreamTrigger
 
     public class StreamResponseData
     {
-        public string Id { get; set; }
         [JsonProperty(PropertyName = "user_id")]
         public string UserId { get; set; }
+
         [JsonProperty(PropertyName = "game_id")]
         public string GameId { get; set; }
+
         [JsonProperty(PropertyName = "community_ids")]
-        public Guid[] CommunityIds { get; set; } // TODO: GUIDS?
+        public Guid[] CommunityIds { get; set; }
+
         public string Type { get; set; }
         public string Title { get; set; }
+
         [JsonProperty(PropertyName = "viewer_count")]
         public int ViewerCount { get; set; }
+
         [JsonProperty(PropertyName = "started_at")]
         public DateTime StartedAt { get; set; }
     }
