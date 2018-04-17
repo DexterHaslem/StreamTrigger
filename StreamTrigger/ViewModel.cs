@@ -21,8 +21,7 @@ namespace StreamTrigger
 
     public class ViewModel : NotifyPropertyChangedBase
     {
-        private const int MaxPollRateSecs = 60 * 5;
-        private const int MinPollRateSecs = 60 * 5;
+        private const int MinPollRateSecs = 15;
         private const int UiUpdateIntervalSecs = 1;
 
         private readonly TwitchApi _api;
@@ -94,7 +93,7 @@ namespace StreamTrigger
             get => _pollRateSeconds;
             set
             {
-                _pollRateSeconds = Math.Max(MinPollRateSecs, Math.Min(MaxPollRateSecs, value));
+                _pollRateSeconds = Math.Max(MinPollRateSecs, value);
                 // dont mess with the timer here, it needs to be stuck at 1 for ui updates
                 OnPropertyChanged();
             }
