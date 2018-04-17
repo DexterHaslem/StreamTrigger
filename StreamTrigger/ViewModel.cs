@@ -1,24 +1,12 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
 using System.Windows.Threading;
 
 namespace StreamTrigger
 {
-    public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged
-    {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-    }
-
     public class ViewModel : NotifyPropertyChangedBase
     {
         private const int MinPollRateSecs = 15;
@@ -31,7 +19,7 @@ namespace StreamTrigger
         private DispatcherTimer _timer;    
         private int _pollRateSeconds = 60;
         private int _uiUpdateCount;
-        private int _updatePercent; // 0 to 100 for progress bar
+        private int _updatePercent;
         private string _updateTooltip;
         private readonly MainWindow _view;
         private string _wentOnlineFileToExecute;
@@ -135,6 +123,7 @@ namespace StreamTrigger
             StreamName = Properties.Settings.Default.StreamName;
             _view.Width = Properties.Settings.Default.WindowWidth;
             _view.Height = Properties.Settings.Default.WindowHeight;
+
             Log("Settings loaded");
         }
 
