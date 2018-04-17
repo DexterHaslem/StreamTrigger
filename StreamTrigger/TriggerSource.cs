@@ -2,13 +2,13 @@
 
 namespace StreamTrigger
 {
-    internal enum TriggerSourceType
+    public enum TriggerSourceType
     {
         Unknown,
         Channel,
     }
 
-    internal class TriggerSource : NotifyPropertyChangedBase
+    public class TriggerSource : NotifyPropertyChangedBase
     {
         private string _name;
         private TriggerSourceType _type;

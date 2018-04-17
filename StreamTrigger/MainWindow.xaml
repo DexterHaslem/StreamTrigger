@@ -42,55 +42,59 @@
             </StatusBarItem>
         </StatusBar>
 
-        <TabControl>
-            <TabItem Header="Settings">
-                <Border Margin="2" Padding="1">
-                    <Grid Margin="1">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+        <TabControl ItemsSource="{Binding TriggerSources}">
+            <!-- <TabItem Header="Settings"> -->
+            <!--     <Border Margin="2" Padding="1"> -->
+            <!--         <Grid Margin="1"> -->
+            <!--             <Grid.RowDefinitions> -->
+            <!--                 <RowDefinition Height="Auto" /> -->
+            <!--                 <RowDefinition Height="Auto" /> -->
+            <!--                 <RowDefinition Height="Auto" /> -->
+            <!--                 <RowDefinition Height="Auto" /> -->
+            <!--             </Grid.RowDefinitions> -->
+            <!-- -->
+            <!--             <Grid.ColumnDefinitions> -->
+            <!--                 <ColumnDefinition Width="150" /> -->
+            <!--                 <ColumnDefinition /> -->
+            <!--                 <ColumnDefinition Width="Auto" /> -->
+            <!--             </Grid.ColumnDefinitions> -->
+            <!-- -->
+            <!--             <Grid Grid.Row="0" Grid.ColumnSpan="3"> -->
+            <!--                 <Grid.ColumnDefinitions> -->
+            <!--                     <ColumnDefinition Width="100" SharedSizeGroup="Fart" /> -->
+            <!--                     <ColumnDefinition /> -->
+            <!--                     <ColumnDefinition Width="Auto" /> -->
+            <!--                     <ColumnDefinition Width="Auto" /> -->
+            <!--                 </Grid.ColumnDefinitions> -->
+            <!-- -->
+            <!--                 <Label Grid.Row="0" Grid.Column="0">Stream name:</Label> -->
+            <!--                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StreamName, UpdateSourceTrigger=PropertyChanged}" /> -->
+            <!-- -->
+            <!--                 <Label Grid.Row="0" Grid.Column="2">Poll Seconds</Label> -->
+            <!--                 <TextBox Grid.Row="0" Grid.Column="3" Width="45" Text="{Binding PollRateSeconds, UpdateSourceTrigger=LostFocus}" /> -->
+            <!--             </Grid> -->
+            <!-- -->
+            <!--             <Label Grid.Row="1" Grid.Column="0">Stream went online</Label> -->
+            <!--             <TextBox Grid.Row="1" Grid.Column="1" -->
+            <!--                      Text="{Binding WentOnlineFileToExecute, UpdateSourceTrigger=PropertyChanged}" /> -->
+            <!--             <Button Click="OnFindOnlineFileClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button> -->
+            <!-- -->
+            <!--             <Label Grid.Row="2" Grid.Column="0">Stream went offline</Label> -->
+            <!--             <TextBox Grid.Row="2" Grid.Column="1" -->
+            <!--                      Text="{Binding WentOfflineFileToExecute, UpdateSourceTrigger=PropertyChanged}" /> -->
+            <!--             <Button Click="OnFindOfflineFileClick" Grid.Row="2" Grid.Column="2" MinWidth="50">...</Button> -->
+            <!--         </Grid> -->
+            <!--     </Border> -->
+            <!-- </TabItem> -->
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="150" />
-                            <ColumnDefinition />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <Grid Grid.Row="0" Grid.ColumnSpan="3">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="100" SharedSizeGroup="Fart" />
-                                <ColumnDefinition />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-
-                            <Label Grid.Row="0" Grid.Column="0">Stream name:</Label>
-                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding StreamName, UpdateSourceTrigger=PropertyChanged}" />
-
-                            <Label Grid.Row="0" Grid.Column="2">Poll Seconds</Label>
-                            <TextBox Grid.Row="0" Grid.Column="3" Width="45" Text="{Binding PollRateSeconds, UpdateSourceTrigger=LostFocus}" />
-                        </Grid>
-
-                        <Label Grid.Row="1" Grid.Column="0">Stream went online</Label>
-                        <TextBox Grid.Row="1" Grid.Column="1"
-                                 Text="{Binding WentOnlineFileToExecute, UpdateSourceTrigger=PropertyChanged}" />
-                        <Button Click="OnFindOnlineFileClick" Grid.Row="1" Grid.Column="2" MinWidth="50">...</Button>
-
-                        <Label Grid.Row="2" Grid.Column="0">Stream went offline</Label>
-                        <TextBox Grid.Row="2" Grid.Column="1"
-                                 Text="{Binding WentOfflineFileToExecute, UpdateSourceTrigger=PropertyChanged}" />
-                        <Button Click="OnFindOfflineFileClick" Grid.Row="2" Grid.Column="2" MinWidth="50">...</Button>
-                    </Grid>
-                </Border>
-            </TabItem>
-
-            <TabItem Header="Log">
-                <ListBox ItemsSource="{Binding LogItems}" />
-            </TabItem>
+            <!-- <TabItem Header="Log"> -->
+            <!--     <ListBox ItemsSource="{Binding LogItems}" /> -->
+            <!-- </TabItem> -->
         </TabControl>
+        
+        <StackPanel>
+            <Button Command="{Binding AddTriggerSourceCommand}">Add trigger source</Button>
+        </StackPanel>
     </DockPanel>
 
 </Window>

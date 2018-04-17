@@ -1,18 +1,18 @@
 ﻿namespace StreamTrigger
 {
-    internal enum TriggerCondition
+    public enum TriggerCondition
     {
         Unknown,
         StreamWentOnline,
         StreamWentOffline,
     }
 
-    internal enum TriggerActionType
+    public enum TriggerActionType
     {
         StartExternalProgram,
     }
 
-    internal class Trigger : NotifyPropertyChangedBase
+    public class Trigger : NotifyPropertyChangedBase
     {
         private TriggerActionType _actionType;
         private string _actionParameter;

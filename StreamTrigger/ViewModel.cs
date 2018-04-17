@@ -3,20 +3,25 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows.Threading;
+using System.Xml.Serialization;
 
 namespace StreamTrigger
 {
     public class ViewModel : NotifyPropertyChangedBase
     {
+        private const string AppDataDir = "StreamTrigger";
+        private const string SavedTriggersFile = "triggers.xml";
+
         private const int MinPollRateSecs = 15;
         private const int UiUpdateIntervalSecs = 1;
 
-        private readonly TwitchApi _api;       
-        private string _streamName;        
+        private readonly TwitchApi _api;
+        private string _streamName;
         private string _statusText;
         private bool? _streamIsOnline;
-        private DispatcherTimer _timer;    
+        private DispatcherTimer _timer;
         private int _pollRateSeconds = 60;
         private int _uiUpdateCount;
         private int _updatePercent;
@@ -26,6 +31,8 @@ namespace StreamTrigger
         private string _wentOfflineFileToExecute;
 
         public ObservableCollection<string> LogItems { get; } = new ObservableCollection<string>();
+
+        public ObservableCollection<TriggerSource> TriggerSources { get; } = new ObservableCollection<TriggerSource>();
 
         public int UpdatePercent
         {
@@ -105,6 +112,8 @@ namespace StreamTrigger
 
             LoadSettings();
 
+            LoadTriggerSources();
+
             StartTimer();
 
             view.Loaded += (o, e) =>
@@ -113,6 +122,33 @@ namespace StreamTrigger
                 _uiUpdateCount = PollRateSeconds;
                 OnTimerTick(this, null);
             };
+        }
+
+        private void LoadTriggerSources()
+        {
+            var fullSavedTriggersPath = GetSavedTriggersPath();
+            if (!File.Exists(fullSavedTriggersPath))
+                return;
+
+            using (var reader = new StreamReader(fullSavedTriggersPath))
+            {
+                var xs = new XmlSerializer(typeof(TriggerSource[]));
+                var triggerSources = (TriggerSource[])xs.Deserialize(reader);
+                TriggerSources.Clear();
+                foreach (var ts in triggerSources)
+                    TriggerSources.Add(ts);
+            }
+        }
+
+        private static string GetSavedTriggersPath()
+        {
+            var appDataDir = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            var streamTriggerDir = Path.Combine(appDataDir, AppDataDir);
+            if (!Directory.Exists(streamTriggerDir))
+                Directory.CreateDirectory(streamTriggerDir);
+
+            var fullSavedTriggersPath = Path.Combine(streamTriggerDir, SavedTriggersFile);
+            return fullSavedTriggersPath;
         }
 
         private void LoadSettings()
@@ -141,8 +177,19 @@ namespace StreamTrigger
         internal void OnWindowClosing()
         {
             SaveSettings();
+            SaveTriggerSources();
 
             _timer.Stop();
+        }
+
+        private void SaveTriggerSources()
+        {
+            var fullSavedTriggersPath = GetSavedTriggersPath();
+            using (var writer = new StreamWriter(fullSavedTriggersPath))
+            {
+                var xs = new XmlSerializer(typeof(TriggerSource[]));
+                xs.Serialize(writer, TriggerSources.ToArray());
+            }
         }
 
         private void StartTimer()
@@ -246,7 +293,7 @@ namespace StreamTrigger
 
             var floatPct = Math.Round((float) _uiUpdateCount / PollRateSeconds * 100);
             UpdateTooltip = $"{floatPct:##.00}%";
-            UpdatePercent = (int)floatPct;
+            UpdatePercent = (int) floatPct;
         }
 
         internal void OnFindExecutableFile(bool isWentOfflineFile)
