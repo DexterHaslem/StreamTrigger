@@ -24,17 +24,18 @@ namespace StreamTrigger
         private const int MinPollRateSecs = 15;
         private const int UiUpdateIntervalSecs = 1;
 
-        private readonly TwitchApi _api;
-        private readonly MainWindow _view;
-        private string _streamName;
-        private string _wentOnlineFileToExecute;
-        private string _wentOfflineFileToExecute;
+        private readonly TwitchApi _api;       
+        private string _streamName;        
         private string _statusText;
         private bool? _streamIsOnline;
+        private DispatcherTimer _timer;    
         private int _pollRateSeconds = 60;
         private int _uiUpdateCount;
         private int _updatePercent; // 0 to 100 for progress bar
-        private DispatcherTimer _timer;
+        private string _updateTooltip;
+        private readonly MainWindow _view;
+        private string _wentOnlineFileToExecute;
+        private string _wentOfflineFileToExecute;
 
         public ObservableCollection<string> LogItems { get; } = new ObservableCollection<string>();
 
@@ -44,6 +45,16 @@ namespace StreamTrigger
             set
             {
                 _updatePercent = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string UpdateTooltip
+        {
+            get => _updateTooltip;
+            set
+            {
+                _updateTooltip = value;
                 OnPropertyChanged();
             }
         }
@@ -193,13 +204,10 @@ namespace StreamTrigger
             Debug.Assert(_streamIsOnline != null);
             var oldStatus = _streamIsOnline.Value;
             Log("Stream went " + (newStatus ? "ONLINE" : "OFFLINE"));
+
             if (newStatus)
             {
-                Log("Live stream info *** ");
-                Log($"\tTitle: \"{data.Title}\"");
-                Log($"\tUser: {StreamName}");
-                Log($"\tViewer Count: {data.ViewerCount}");
-                Log($"\tStarted on: {data.StartedAt.ToLocalTime()}");
+                LogLiveStreamInfo(data);
             }
 
             // this method should only be called when things effectively change
@@ -226,6 +234,15 @@ namespace StreamTrigger
             _streamIsOnline = newStatus;
         }
 
+        private void LogLiveStreamInfo(StreamResponseData data)
+        {
+            Log("Live stream info *** ");
+            Log($"\tTitle: \"{data.Title}\"");
+            Log($"\tUser: {StreamName}");
+            Log($"\tViewer Count: {data.ViewerCount}");
+            Log($"\tStarted on: {data.StartedAt.ToLocalTime()}");
+        }
+
         private void Log(string item)
         {
             LogItems.Add($"{DateTime.Now}: {item}");
@@ -238,7 +255,9 @@ namespace StreamTrigger
             else
                 StatusText = "Getting stream state";
 
-            UpdatePercent = (int) ((float) _uiUpdateCount / PollRateSeconds * 100);
+            var floatPct = Math.Round((float) _uiUpdateCount / PollRateSeconds * 100);
+            UpdateTooltip = $"{floatPct:##.00}%";
+            UpdatePercent = (int)floatPct;
         }
 
         internal void OnFindExecutableFile(bool isWentOfflineFile)
