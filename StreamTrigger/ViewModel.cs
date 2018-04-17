@@ -12,7 +12,8 @@ namespace StreamTrigger
     public abstract class NotifyPropertyChangedBase : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName]string propertyName = "")
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -108,12 +109,12 @@ namespace StreamTrigger
 
             StartTimer();
 
-            view.Loaded += (o,e) =>
+            view.Loaded += (o, e) =>
             {
                 // force an initial update so we know stream status right away
                 _uiUpdateCount = PollRateSeconds;
                 OnTimerTick(this, null);
-            };            
+            };
         }
 
         private void LoadSettings()
@@ -152,7 +153,7 @@ namespace StreamTrigger
             _timer = new DispatcherTimer(DispatcherPriority.Background, _view.Dispatcher)
             {
                 Interval = TimeSpan.FromSeconds(UiUpdateIntervalSecs)
-            };           
+            };
             _timer.Tick += OnTimerTick;
             _timer.Start();
         }
@@ -238,7 +239,7 @@ namespace StreamTrigger
             else
                 StatusText = "Getting stream state";
 
-            UpdatePercent = (int)((float)_uiUpdateCount / PollRateSeconds * 100);
+            UpdatePercent = (int) ((float) _uiUpdateCount / PollRateSeconds * 100);
         }
 
         internal void OnFindExecutableFile(bool isWentOfflineFile)
@@ -251,14 +252,14 @@ namespace StreamTrigger
             };
 
             // don't set find dialog's initial directory in code, this will nuke user's last used on a fresh start
-                
+
             var usePath = findFileDlg.ShowDialog() == true;
             if (!usePath)
                 return;
 
             if (isWentOfflineFile)
                 WentOfflineFileToExecute = findFileDlg.FileName;
-            else 
+            else
                 WentOnlineFileToExecute = findFileDlg.FileName;
         }
     }
