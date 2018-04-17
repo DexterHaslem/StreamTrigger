@@ -42,7 +42,21 @@
             </StatusBarItem>
         </StatusBar>
 
+        <StackPanel DockPanel.Dock="Bottom">
+            <Button Command="{Binding AddTriggerSourceCommand}">Add trigger source</Button>
+        </StackPanel>
+
         <TabControl ItemsSource="{Binding TriggerSources}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Name}"></TextBlock>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Type}"></TextBlock>
+                </DataTemplate>
+            </TabControl.ContentTemplate>
             <!-- <TabItem Header="Settings"> -->
             <!--     <Border Margin="2" Padding="1"> -->
             <!--         <Grid Margin="1"> -->
@@ -91,10 +105,6 @@
             <!--     <ListBox ItemsSource="{Binding LogItems}" /> -->
             <!-- </TabItem> -->
         </TabControl>
-        
-        <StackPanel>
-            <Button Command="{Binding AddTriggerSourceCommand}">Add trigger source</Button>
-        </StackPanel>
     </DockPanel>
 
 </Window>

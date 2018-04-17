@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Windows.Input;
 using System.Windows.Threading;
 using System.Xml.Serialization;
 
@@ -13,6 +14,7 @@ namespace StreamTrigger
     {
         private const string AppDataDir = "StreamTrigger";
         private const string SavedTriggersFile = "triggers.xml";
+        private const int SerializationVersion = 1; 
 
         private const int MinPollRateSecs = 15;
         private const int UiUpdateIntervalSecs = 1;
@@ -33,6 +35,8 @@ namespace StreamTrigger
         public ObservableCollection<string> LogItems { get; } = new ObservableCollection<string>();
 
         public ObservableCollection<TriggerSource> TriggerSources { get; } = new ObservableCollection<TriggerSource>();
+
+        public ICommand AddTriggerSourceCommand { get; private set; }
 
         public int UpdatePercent
         {
@@ -110,6 +114,8 @@ namespace StreamTrigger
             _api = new TwitchApi(Properties.Settings.Default.ClientId);
             _view = view;
 
+            WireCommands();
+
             LoadSettings();
 
             LoadTriggerSources();
@@ -124,6 +130,24 @@ namespace StreamTrigger
             };
         }
 
+        private void WireCommands()
+        {
+            AddTriggerSourceCommand = new RoutedUICommand("AddTriggerSource", "AddTriggerSource", typeof(MainWindow));
+            _view.CommandBindings.Add(new CommandBinding(AddTriggerSourceCommand, OnAddNewTriggerSource));        
+        }
+
+        private void OnAddNewTriggerSource(object sender, ExecutedRoutedEventArgs e)
+        {
+            var newSource = new TriggerSource
+            {
+                Name = "Stream name..",
+                Triggers = new ObservableCollection<Trigger>(),
+                Type = TriggerSourceType.Channel
+            };
+
+            TriggerSources.Add(newSource);
+        }
+
         private void LoadTriggerSources()
         {
             var fullSavedTriggersPath = GetSavedTriggersPath();
@@ -132,10 +156,12 @@ namespace StreamTrigger
 
             using (var reader = new StreamReader(fullSavedTriggersPath))
             {
-                var xs = new XmlSerializer(typeof(TriggerSource[]));
-                var triggerSources = (TriggerSource[])xs.Deserialize(reader);
+                var xs = new XmlSerializer(typeof(SavedTriggerSources));
+                var savedTriggerSourcesSerInfo = (SavedTriggerSources)xs.Deserialize(reader);
+
                 TriggerSources.Clear();
-                foreach (var ts in triggerSources)
+
+                foreach (var ts in savedTriggerSourcesSerInfo.TriggerSources)
                     TriggerSources.Add(ts);
             }
         }
@@ -187,8 +213,14 @@ namespace StreamTrigger
             var fullSavedTriggersPath = GetSavedTriggersPath();
             using (var writer = new StreamWriter(fullSavedTriggersPath))
             {
-                var xs = new XmlSerializer(typeof(TriggerSource[]));
-                xs.Serialize(writer, TriggerSources.ToArray());
+                var xs = new XmlSerializer(typeof(SavedTriggerSources));
+                var saveSerialize = new SavedTriggerSources
+                {
+                    SaveVersion = SerializationVersion,
+                    TriggerSources = TriggerSources.ToArray(),
+                };
+
+                xs.Serialize(writer, saveSerialize);
             }
         }
 

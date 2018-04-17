@@ -36,4 +36,11 @@ namespace StreamTrigger
             }
         }
     }
+
+    public class SavedTriggerSources
+    {
+        // for save version conversion adapters to make backwards compatible 
+        public int SaveVersion { get; set; }
+        public TriggerSource[] TriggerSources { get; set; }
+    }
 }
